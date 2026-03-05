@@ -1,0 +1,43 @@
+{
+  "cli": {
+    "version": ">= 5.0.0",
+    "appVersionSource": "local"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
+        "simulator": true
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "ios": {
+        "simulator": false
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "ios": {
+        "buildConfiguration": "Release",
+        "credentialsSource": "remote"
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "me@dimitri.app",
+        "ascAppId": "6760085604",
+        "appleTeamId": "349G9V8J9C",
+        "ascApiKeyPath": "./.keys/AuthKey_77MV84N7F3.p8",
+        "ascApiKeyIssuerId": "0f755a49-d4a9-410f-99d3-bf855c230ef9",
+        "ascApiKeyId": "77MV84N7F3"
+      }
+    }
+  }
+}
