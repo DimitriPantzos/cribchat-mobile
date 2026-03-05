@@ -1,12 +1,17 @@
 import { useState, useCallback } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, useColorScheme, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator } from 'react-native';
-import { useSignIn } from '@clerk/clerk-expo';
+import { useSignIn, useOAuth } from '@clerk/clerk-expo';
 import { useRouter, Link } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as WebBrowser from 'expo-web-browser';
 import { colors, spacing, radius, typography } from '../../lib/theme';
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function SignIn() {
   const { signIn, setActive, isLoaded } = useSignIn();
+  const { startOAuthFlow: startAppleOAuth } = useOAuth({ strategy: 'oauth_apple' });
+  const { startOAuthFlow: startGoogleOAuth } = useOAuth({ strategy: 'oauth_google' });
   const router = useRouter();
   const colorScheme = useColorScheme();
   const theme = colorScheme === 'dark' ? colors.dark : colors.light;
@@ -26,6 +31,32 @@ export default function SignIn() {
     finally { setIsLoading(false); }
   }, [isLoaded, email, password, signIn, setActive, router]);
 
+  const onAppleSignIn = useCallback(async () => {
+    try {
+      setError(''); setIsLoading(true);
+      const { createdSessionId, setActive: setOAuthActive } = await startAppleOAuth();
+      if (createdSessionId && setOAuthActive) {
+        await setOAuthActive({ session: createdSessionId });
+        router.replace('/');
+      }
+    } catch (err: any) {
+      setError(err.errors?.[0]?.message || 'Apple sign in failed');
+    } finally { setIsLoading(false); }
+  }, [startAppleOAuth, router]);
+
+  const onGoogleSignIn = useCallback(async () => {
+    try {
+      setError(''); setIsLoading(true);
+      const { createdSessionId, setActive: setOAuthActive } = await startGoogleOAuth();
+      if (createdSessionId && setOAuthActive) {
+        await setOAuthActive({ session: createdSessionId });
+        router.replace('/');
+      }
+    } catch (err: any) {
+      setError(err.errors?.[0]?.message || 'Google sign in failed');
+    } finally { setIsLoading(false); }
+  }, [startGoogleOAuth, router]);
+
   const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: theme.bgPrimary },
     scrollContent: { flexGrow: 1, justifyContent: 'center', padding: spacing.lg },
@@ -38,6 +69,14 @@ export default function SignIn() {
     button: { backgroundColor: theme.accentPrimary, padding: spacing.md, borderRadius: radius.lg, alignItems: 'center', marginTop: spacing.sm },
     buttonDisabled: { opacity: 0.6 },
     buttonText: { color: theme.textInverse, fontSize: typography.sizes.lg, fontWeight: typography.weights.semibold },
+    oauthButton: { backgroundColor: '#000', padding: spacing.md, borderRadius: radius.lg, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: spacing.sm },
+    appleButton: { backgroundColor: '#000' },
+    googleButton: { backgroundColor: '#fff', borderWidth: 1, borderColor: theme.border },
+    oauthButtonText: { color: '#fff', fontSize: typography.sizes.md, fontWeight: typography.weights.semibold },
+    googleButtonText: { color: '#000' },
+    divider: { flexDirection: 'row', alignItems: 'center', marginVertical: spacing.lg },
+    dividerLine: { flex: 1, height: 1, backgroundColor: theme.border },
+    dividerText: { color: theme.textMuted, paddingHorizontal: spacing.md, fontSize: typography.sizes.sm },
     error: { backgroundColor: theme.errorBg, padding: spacing.md, borderRadius: radius.md, marginBottom: spacing.md },
     errorText: { color: theme.error, textAlign: 'center', fontSize: typography.sizes.sm },
     footer: { flexDirection: 'row', justifyContent: 'center', marginTop: spacing.xl, gap: spacing.xs },
@@ -49,6 +88,25 @@ export default function SignIn() {
     <SafeAreaView style={styles.container}><KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}><ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
       <View style={styles.header}><Text style={styles.emoji}>🍼</Text><Text style={styles.title}>CribChat</Text><Text style={styles.subtitle}>Welcome back, sleepy parent!</Text></View>
       {error ? <View style={styles.error}><Text style={styles.errorText}>{error}</Text></View> : null}
+      
+      {/* OAuth Buttons */}
+      <View style={styles.form}>
+        <TouchableOpacity style={[styles.oauthButton, styles.appleButton]} onPress={onAppleSignIn} disabled={isLoading}>
+          <Text style={{ fontSize: 20 }}>🍎</Text>
+          <Text style={styles.oauthButtonText}>Continue with Apple</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.oauthButton, styles.googleButton]} onPress={onGoogleSignIn} disabled={isLoading}>
+          <Text style={{ fontSize: 20 }}>G</Text>
+          <Text style={[styles.oauthButtonText, styles.googleButtonText]}>Continue with Google</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.divider}>
+        <View style={styles.dividerLine} />
+        <Text style={styles.dividerText}>or</Text>
+        <View style={styles.dividerLine} />
+      </View>
+
       <View style={styles.form}>
         <TextInput style={styles.input} placeholder="Email" placeholderTextColor={theme.textMuted} value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" autoComplete="email" />
         <TextInput style={styles.input} placeholder="Password" placeholderTextColor={theme.textMuted} value={password} onChangeText={setPassword} secureTextEntry autoComplete="password" />
