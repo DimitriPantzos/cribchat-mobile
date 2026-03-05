@@ -13,7 +13,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "buildNumber": "10"
+      "buildNumber": "100"
     },
     "android": {
       "adaptiveIcon": {

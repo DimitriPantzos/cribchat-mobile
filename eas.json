@@ -18,7 +18,7 @@
       }
     },
     "production": {
-      "autoIncrement": true,
+      "autoIncrement": false,
       "env": {
         "NPM_CONFIG_LEGACY_PEER_DEPS": "true",
         "CI": "true"
