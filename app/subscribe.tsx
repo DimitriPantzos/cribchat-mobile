@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, useColorScheme, ActivityIndic
 import { useRouter } from 'expo-router';
 import { useUser } from '@clerk/clerk-expo';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Product } from 'react-native-iap';
+import { Product } from '../lib/purchases';
 import { useMutation } from 'convex/react';
 import { api } from '../convex/_generated/api';
 import { colors, spacing, radius, typography } from '../lib/theme';
