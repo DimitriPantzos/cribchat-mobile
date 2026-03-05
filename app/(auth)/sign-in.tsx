@@ -7,6 +7,7 @@ import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
 import { colors, spacing, radius, typography } from '../../lib/theme';
 
+// Complete any pending auth sessions
 WebBrowser.maybeCompleteAuthSession();
 
 // Warm up browser on iOS for smoother OAuth
@@ -23,8 +24,12 @@ export default function SignIn() {
   useWarmUpBrowser(); // Warm up browser for OAuth on iOS
   
   const { signIn, setActive, isLoaded } = useSignIn();
-  const { startOAuthFlow: startAppleOAuth } = useOAuth({ strategy: 'oauth_apple' });
-  const { startOAuthFlow: startGoogleOAuth } = useOAuth({ strategy: 'oauth_google' });
+  
+  // Create redirect URL for OAuth callback
+  const redirectUrl = Linking.createURL('/(auth)/sign-in');
+  
+  const { startOAuthFlow: startAppleOAuth } = useOAuth({ strategy: 'oauth_apple', redirectUrl });
+  const { startOAuthFlow: startGoogleOAuth } = useOAuth({ strategy: 'oauth_google', redirectUrl });
   const router = useRouter();
   const colorScheme = useColorScheme();
   const theme = colorScheme === 'dark' ? colors.dark : colors.light;
@@ -47,12 +52,21 @@ export default function SignIn() {
   const onAppleSignIn = useCallback(async () => {
     try {
       setError(''); setIsLoading(true);
-      const { createdSessionId, setActive: setOAuthActive } = await startAppleOAuth();
+      const { createdSessionId, setActive: setOAuthActive, signIn, signUp } = await startAppleOAuth();
+      
+      // User cancelled the OAuth flow
+      if (!createdSessionId && !signIn && !signUp) {
+        return; // Silently return, user cancelled
+      }
+      
       if (createdSessionId && setOAuthActive) {
         await setOAuthActive({ session: createdSessionId });
         router.replace('/');
       }
     } catch (err: any) {
+      console.error('[OAuth] Apple sign in error:', err);
+      // Don't show error if user cancelled
+      if (err.message?.includes('cancelled') || err.message?.includes('canceled')) return;
       setError(err.errors?.[0]?.message || 'Apple sign in failed');
     } finally { setIsLoading(false); }
   }, [startAppleOAuth, router]);
@@ -60,12 +74,21 @@ export default function SignIn() {
   const onGoogleSignIn = useCallback(async () => {
     try {
       setError(''); setIsLoading(true);
-      const { createdSessionId, setActive: setOAuthActive } = await startGoogleOAuth();
+      const { createdSessionId, setActive: setOAuthActive, signIn, signUp } = await startGoogleOAuth();
+      
+      // User cancelled the OAuth flow
+      if (!createdSessionId && !signIn && !signUp) {
+        return; // Silently return, user cancelled
+      }
+      
       if (createdSessionId && setOAuthActive) {
         await setOAuthActive({ session: createdSessionId });
         router.replace('/');
       }
     } catch (err: any) {
+      console.error('[OAuth] Google sign in error:', err);
+      // Don't show error if user cancelled
+      if (err.message?.includes('cancelled') || err.message?.includes('canceled')) return;
       setError(err.errors?.[0]?.message || 'Google sign in failed');
     } finally { setIsLoading(false); }
   }, [startGoogleOAuth, router]);
