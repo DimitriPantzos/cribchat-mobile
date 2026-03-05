@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, useColorScheme, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator } from 'react-native';
 import { useSignUp, useOAuth } from '@clerk/clerk-expo';
 import { useRouter, Link } from 'expo-router';
@@ -8,7 +8,19 @@ import { colors, spacing, radius, typography } from '../../lib/theme';
 
 WebBrowser.maybeCompleteAuthSession();
 
+// Warm up browser on iOS for smoother OAuth
+const useWarmUpBrowser = () => {
+  useEffect(() => {
+    if (Platform.OS === 'ios') {
+      void WebBrowser.warmUpAsync();
+      return () => { void WebBrowser.coolDownAsync(); };
+    }
+  }, []);
+};
+
 export default function SignUp() {
+  useWarmUpBrowser(); // Warm up browser for OAuth on iOS
+  
   const { signUp, setActive, isLoaded } = useSignUp();
   const { startOAuthFlow: startAppleOAuth } = useOAuth({ strategy: 'oauth_apple' });
   const { startOAuthFlow: startGoogleOAuth } = useOAuth({ strategy: 'oauth_google' });
