@@ -18,10 +18,13 @@
       }
     },
     "production": {
-      "autoIncrement": false,
+      "autoIncrement": true,
       "env": {
         "NPM_CONFIG_LEGACY_PEER_DEPS": "true",
-        "CI": "true"
+        "CI": "true",
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsuY3JpYmNoYXQuYXBwJA",
+        "EXPO_PUBLIC_CONVEX_URL": "https://terrific-malamute-903.convex.cloud",
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_live_51T7TbU6u1ZVuB5ximtIRyUDgLPjjowd54vNtmYZLHoTmDV2dXUnkGqdRoKaUDSqTEh4801o7QYn9YJZBpizH6dO600vUTRvBAV"
       },
       "ios": {
         "buildConfiguration": "Release",
