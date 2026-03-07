@@ -1,6 +1,9 @@
 {
   "expo": {
     "name": "CribChat",
-    "slug": "cribchat"
+    "slug": "cribchat",
+    "ios": {
+      "buildNumber": "336"
+    }
   }
 }
