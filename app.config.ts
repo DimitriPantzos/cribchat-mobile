@@ -17,6 +17,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: false,
     bundleIdentifier: 'com.lyfehospitality.cribchat',
+    buildNumber: '337',
     infoPlist: {
       UIBackgroundModes: ['audio', 'fetch', 'remote-notification'],
       ITSAppUsesNonExemptEncryption: false,
